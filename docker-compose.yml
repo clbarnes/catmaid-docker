@@ -1,0 +1,40 @@
+version: "3"
+
+services:
+
+  db:
+    image: mdillon/postgis:9.6
+    restart: unless-stopped
+    volumes:
+      - ./volumes/db/var/lib/postgresql/data:/var/lib/postgresql/data
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      - POSTGRES_USER=catmaid
+      - POSTGRES_PASSWORD=catmaid_password
+      - POSTGRES_DB=catmaid
+
+  app:
+    image: catmaid/catmaid:compose
+    restart: unless-stopped
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      # set same as db credentials and dbname
+      - MM_USERNAME=mmuser
+      - MM_PASSWORD=mmuser_password
+      - MM_DBNAME=mattermost
+    depends_on:
+      - db
+
+  web:
+    image: nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    restart: unless-stopped
+    volumes:
+      # This directory must have cert files
+      - ./volumes/web/cert:/cert:ro
+      - /etc/localtime:/etc/localtime:ro
+    depends_on:
+      - app
