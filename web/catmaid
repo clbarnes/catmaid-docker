@@ -1,0 +1,23 @@
+map $http_x_forwarded_proto $proxy_x_forwarded_proto {
+  default $http_x_forwarded_proto;
+  ''      $scheme;
+}
+
+server {
+    listen 80;
+
+    upstream django {
+        server app:8000;
+    }
+
+    charset     utf-8;
+
+    location /static/ {
+        alias /home/django/static/;
+    }
+
+    location / {
+        uwsgi_pass      django;
+        include         uwsgi_params;
+    }
+}

@@ -14,20 +14,22 @@ services:
       - POSTGRES_DB=catmaid
 
   app:
-    image: catmaid/catmaid:compose
+    image: catmaid/catmaid
     restart: unless-stopped
     volumes:
       - /etc/localtime:/etc/localtime:ro
     environment:
       # set same as db credentials and dbname
-      - MM_USERNAME=mmuser
-      - MM_PASSWORD=mmuser_password
-      - MM_DBNAME=mattermost
+      - DB_HOST=db
+      - DB_USER=catmaid
+      - DB_PASS=catmaid_password
+      - DB_NAME=catmaid
+      - CM_EXAMPLE_PROJECTS=true
     depends_on:
       - db
 
   web:
-    image: nginx
+    build: web
     ports:
       - "80:80"
       - "443:443"
