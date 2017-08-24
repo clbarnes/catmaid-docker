@@ -17,8 +17,8 @@ services:
     image: catmaid/catmaid
     restart: unless-stopped
     volumes:
+      - ./volumes/app/static:/home/django/static
       - /etc/localtime:/etc/localtime:ro
-      - /static:/home/django/static
     environment:
       # set same as db credentials and dbname
       - DB_HOST=db
@@ -38,7 +38,7 @@ services:
     volumes:
       # This directory must have cert files
       - ./volumes/web/cert:/cert:ro
+      - ./volumes/app/static:/static:ro
       - /etc/localtime:/etc/localtime:ro
-      - /static:/static:ro
     depends_on:
       - app
