@@ -30,7 +30,7 @@ Run containers:
 docker-compose up
 ```
 
-Navigate your browser to [http://localhost](http://localhost)
+Navigate your browser to [http://localhost:8000](http://localhost:8000)
 and you should see the CATMAID front page. You can log in as a superuser
 with username "admin" and password "admin". The Docker image contains a few
 example projects, which are added by default. To disable these, set
