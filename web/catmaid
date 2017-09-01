@@ -62,7 +62,7 @@ server {
         uwsgi_pass      django;
         include         uwsgi_params;
 
-        # Allow clients to send up to 5MB of data
-        client_max_body_size 5m;
+        # Allow clients to send up to 10MB of data
+        client_max_body_size 10m;
     }
 }
