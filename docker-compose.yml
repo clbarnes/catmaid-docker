@@ -3,7 +3,7 @@ version: "3"
 services:
 
   db:
-    image: mdillon/postgis:9.6
+    build: db
     restart: on-failure
     volumes:
       - ./volumes/db/var/lib/postgresql/data:/var/lib/postgresql/data
@@ -12,6 +12,15 @@ services:
       - POSTGRES_USER=catmaid
       - POSTGRES_PASSWORD=catmaid_password
       - POSTGRES_DB=catmaid
+      # By default, 50 connections are assumed.
+      - DB_CONNECTIONS=50
+      # By default, the database is only tuned on initial startup. To force a
+      # new tuning, set DB_FORCE_TUNE=true.
+      - DB_FORCE_TUNE=false
+      # By default the available memory of the host is used for tuning the
+      # database. This can be overridden by setting INSTANCE_MEMORY to a custom
+      # value in megabytes.
+      #- INSTANCE_MEMORY=512
 
   app:
     image: catmaid/catmaid
