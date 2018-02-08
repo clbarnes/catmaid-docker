@@ -17,6 +17,10 @@ services:
       # By default, the database is only tuned on initial startup. To force a
       # new tuning, set DB_FORCE_TUNE=true.
       - DB_FORCE_TUNE=false
+      #
+      # Enable initial tuning
+      # - DB_TUNE=true
+      #
       # By default the available memory of the host is used for tuning the
       # database. This can be overridden by setting INSTANCE_MEMORY to a custom
       # value in megabytes.

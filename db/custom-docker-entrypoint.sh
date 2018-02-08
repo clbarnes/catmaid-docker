@@ -5,6 +5,7 @@ DB_PORT=${DB_PORT:-5432}
 DB_CONNECTIONS=${DB_CONNECTIONS:-50}
 DB_CONF_FILE=${DB_CONF_FILE:-"/var/lib/postgresql/data/postgresql.conf"}
 DB_FORCE_TUNE=${DB_FORCE_TUNE:-false}
+DB_TUNE=${DB_TUNE:-true}
 AVAILABLE_MEMORY=`awk '/MemTotal/ { printf "%.3f \n", $2/1024 }' /proc/meminfo`
 INSTANCE_MEMORY=${INSTANCE_MEMORY:-$AVAILABLE_MEMORY}
 
@@ -18,9 +19,11 @@ tune_db () {
   # Wait to avoid "panic: Failed to open sql connection pq: the database system is starting up"
   sleep 1
 
-  echo "Tuning Postgres server configuration (connections: $DB_CONNECTIONS memory: $INSTANCE_MEMORY MB force: $DB_FORCE_TUNE)"
-  INSTANCE_MEMORY=${INSTANCE_MEMORY} CONNECTIONS=${DB_CONNECTIONS} CONF_FILE=${DB_CONF_FILE} FORCE_PGTUNE=${DB_FORCE_TUNE} python /pg_tune.py
-  service postgresql reload
+  if [ "$DB_TUNE" = true ] ; then
+    echo "Tuning Postgres server configuration (connections: $DB_CONNECTIONS memory: $INSTANCE_MEMORY MB force: $DB_FORCE_TUNE)"
+    INSTANCE_MEMORY=${INSTANCE_MEMORY} CONNECTIONS=${DB_CONNECTIONS} CONF_FILE=${DB_CONF_FILE} FORCE_PGTUNE=${DB_FORCE_TUNE} python /pg_tune.py
+    service postgresql reload
+  fi
 }
 
 tune_db &
