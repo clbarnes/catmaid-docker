@@ -2,48 +2,26 @@ version: "3"
 
 services:
 
-  db:
-    build: db
-    restart: on-failure
-    volumes:
-      - ./volumes/db/var/lib/postgresql/data:/var/lib/postgresql/data
-      - /etc/localtime:/etc/localtime:ro
-    environment:
-      - POSTGRES_USER=catmaid
-      - POSTGRES_PASSWORD=catmaid_password
-      - POSTGRES_DB=catmaid
-      # By default, 50 connections are assumed.
-      - DB_CONNECTIONS=50
-      # By default, the database is only tuned on initial startup. To force a
-      # new tuning, set DB_FORCE_TUNE=true.
-      - DB_FORCE_TUNE=false
-      # By default the available memory of the host is used for tuning the
-      # database. This can be overridden by setting INSTANCE_MEMORY to a custom
-      # value in megabytes.
-      #- INSTANCE_MEMORY=512
-
   app:
     image: catmaid/catmaid
     restart: unless-stopped
+    network_mode: "host"
     volumes:
       - ./volumes/app/static:/home/django/static
       - /etc/localtime:/etc/localtime:ro
     environment:
       # set same as db credentials and dbname
-      - DB_HOST=db
-      - DB_USER=catmaid
-      - DB_PASS=catmaid_password
-      - DB_NAME=catmaid
+      - DB_HOST=localhost
+      - DB_USER=<catmaid-user>
+      - DB_PASS=<catmaid-password>
+      - DB_NAME=<catmaid-database>
+      - DB_TUNE=false
       - CM_EXAMPLE_PROJECTS=true
-    depends_on:
-      - db
 
   web:
     build: web
-    ports:
-      - "8000:80"
-      - "8443:443"
     restart: on-failure
+    network_mode: "host"
     volumes:
       # This directory must have cert files
       - ./volumes/web/cert:/cert:ro

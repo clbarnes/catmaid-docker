@@ -4,11 +4,11 @@ map $http_x_forwarded_proto $proxy_x_forwarded_proto {
 }
 
 upstream django {
-    server app:8000;
+    server localhost:27008;
 }
 
 server {
-    listen 80;
+    listen 28008;
 
     charset     utf-8;
 
