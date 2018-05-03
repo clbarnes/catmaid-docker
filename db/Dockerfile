@@ -1,5 +1,9 @@
 FROM mdillon/postgis:9.6
 
+# For building and running the image, let dpkg/apt know that we install and
+# configure non-interactively.
+ENV DEBIAN_FRONTEND=noninteractive
+
 RUN apt-get update -y \
     && apt-get install -y netcat
 
