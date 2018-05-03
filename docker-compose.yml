@@ -7,7 +7,7 @@ services:
     restart: on-failure
     volumes:
       - ./volumes/db/var/lib/postgresql/data:/var/lib/postgresql/data
-      - /etc/localtime:/etc/localtime:ro
+      # No time mapping is needed, we expect the database to run in UTC.
     environment:
       - POSTGRES_USER=catmaid
       - POSTGRES_PASSWORD=catmaid_password
@@ -17,6 +17,8 @@ services:
       # By default, the database is only tuned on initial startup. To force a
       # new tuning, set DB_FORCE_TUNE=true.
       - DB_FORCE_TUNE=false
+      # Allow database updates
+      #- DB_UPDATE=false
       #
       # Enable initial tuning
       # - DB_TUNE=true

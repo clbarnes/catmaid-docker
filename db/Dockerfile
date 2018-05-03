@@ -1,11 +1,13 @@
-FROM mdillon/postgis:9.6
+FROM mdillon/postgis:10
 
 # For building and running the image, let dpkg/apt know that we install and
 # configure non-interactively.
 ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=UTC
 
 RUN apt-get update -y \
-    && apt-get install -y netcat
+    && apt-get install -y apt-utils tzdata \
+		&& rm -rf /var/lib/apt/lists/*
 
 COPY ./pg_tune.py /
 COPY custom-docker-entrypoint.sh /
