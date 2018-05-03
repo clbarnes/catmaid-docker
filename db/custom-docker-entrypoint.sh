@@ -176,6 +176,12 @@ update_postgres () {
   find /var/lib/postgresql/data/new-data ! -regex '^/var/lib/postgresql/data/new-data$' -maxdepth 1 -exec mv '{}' /var/lib/postgresql/data \;
   rm -r /var/lib/postgresql/data/new-data
 
+  echo "- Analyzing new data"
+  PGBIN_NEW="/usr/lib/postgresql/${BIN_PG_VERSION}/bin"
+  su postgres -c "${PGBIN_NEW}/pg_ctl -D /var/lib/postgresql/data/ start -w -o \"-p 5433 \""
+  su postgres -c "${PGBIN_NEW}/vacuumdb -p 5433 --all --analyze"
+  su postgres -c "${PGBIN_NEW}/pg_ctl -D /var/lib/postgresql/data/ stop -w"
+
   # Update paths in postgres configuration files
   echo "- Updating Postgres data path in configuration files"
   sed -i -e 's/\/new-data//g' /var/lib/postgresql/data/postgresql.conf
