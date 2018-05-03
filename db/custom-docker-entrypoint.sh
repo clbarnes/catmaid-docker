@@ -13,8 +13,9 @@ DATA_PG_VERSION=$(cat /var/lib/postgresql/data/PG_VERSION)
 BIN_PG_VERSION="10"
 
 tune_db () {
+  PGBIN="/usr/lib/postgresql/${BIN_PG_VERSION}/bin"
   echo "Wait until database $DB_HOST:$DB_PORT is ready..."
-  until su postgres -c "pg_isready -h localhost -p 5432 -q; exit \$?"
+  until su postgres -c "${PGBIN}/pg_isready -h ${DB_HOST} -p ${DB_PORT} -q; exit \$?"
   do
       sleep 1
   done
