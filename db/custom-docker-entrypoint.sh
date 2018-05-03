@@ -26,7 +26,7 @@ tune_db () {
   if [ "$DB_TUNE" = true ] ; then
     echo "Tuning Postgres server configuration (connections: $DB_CONNECTIONS memory: $INSTANCE_MEMORY MB force: $DB_FORCE_TUNE)"
     INSTANCE_MEMORY=${INSTANCE_MEMORY} CONNECTIONS=${DB_CONNECTIONS} CONF_FILE=${DB_CONF_FILE} FORCE_PGTUNE=${DB_FORCE_TUNE} python /pg_tune.py
-    service postgresql reload
+    su postgres -c "${PGBIN}/pg_ctl -D /var/lib/postgresql/data/ reload -w; exit \$?"
   fi
 }
 
