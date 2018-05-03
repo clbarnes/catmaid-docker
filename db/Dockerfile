@@ -6,7 +6,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV TZ=UTC
 
 RUN apt-get update -y \
-    && apt-get install -y apt-utils tzdata \
+    && apt-get install -y apt-utils tzdata python \
 		&& rm -rf /var/lib/apt/lists/*
 
 COPY ./pg_tune.py /
