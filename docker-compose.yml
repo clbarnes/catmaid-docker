@@ -7,6 +7,7 @@ services:
     restart: on-failure
     volumes:
       - ./volumes/db/var/lib/postgresql/data:/var/lib/postgresql/data
+      - ./volumes/db/opt/import:/opt/import
       # No time mapping is needed, we expect the database to run in UTC.
     environment:
       - POSTGRES_USER=catmaid
