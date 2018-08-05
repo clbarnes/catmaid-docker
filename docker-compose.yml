@@ -36,32 +36,32 @@ services:
       - /etc/localtime:/etc/localtime:ro
     environment:
       # set same as db credentials and dbname
-      - DB_HOST=db
-      - DB_USER=catmaid
-      - DB_PASS=catmaid_password
-      - DB_NAME=catmaid
+      DB_HOST: db
+      DB_USER: catmaid
+      DB_PASS: catmaid_password
+      DB_NAME: catmaid
       # Add example projects
-      - CM_EXAMPLE_PROJECTS=true
+      CM_EXAMPLE_PROJECTS: true
       # Adjust the maximum size in Bytes of imported skeletons
-      #- CM_IMPORTED_SKELETON_FILE_MAXIMUM_SIZE=5242880
+      #CM_IMPORTED_SKELETON_FILE_MAXIMUM_SIZE: 5242880
       # The IP to listen on
-      #- CM_HOST=0.0.0.0
+      #CM_HOST: "0.0.0.0"
       # The port to listen on
-      #- CM_PORT=8000
+      #CM_PORT: 8000
       # Whether CATMAID's settings.py should be regenerated
-      #- CM_FORCE_CONFIG_UPDATE=false
+      #CM_FORCE_CONFIG_UPDATE: "false"
       # Where CATMAID can write data to
-      #- CM_WRITEABLE_PATH="/tmp"
+      #CM_WRITEABLE_PATH: "/tmp"
       # The maximum number of nodes to fetch in one request
-      #- CM_NODE_LIMIT=10000
+      #CM_NODE_LIMIT: 10000
       # Which node provider to use
-      #- CM_NODE_PROVIDER="postgis2d"
+      #CM_NODE_PROVIDERS: "['postgis2d']"
       # The subdirectory relative to the external domain root, no trailing or
       # leading slashes.
-      #- CM_SUBDIRECTORY=""
+      #CM_SUBDIRECTORY: ""
       # Which sources to trust for CSRF protection, typically the external
       # domain, e.g. catmaid.example.com
-      #- CM_CSRF_TRUSTED_ORIGINS=""
+      #CM_CSRF_TRUSTED_ORIGINS: ""
     depends_on:
       - db
 
