@@ -64,5 +64,10 @@ server {
 
         # Allow clients to send up to 10MB of data
         client_max_body_size 10m;
+
+        # Basic authentication is disabled by default, but can be enabled throug
+        # environment variables in the docker-compose.yml file.
+        auth_basic off;
+        auth_basic_user_file auth.htpasswd;
     }
 }

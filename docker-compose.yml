@@ -76,5 +76,12 @@ services:
       - ./volumes/web/cert:/cert:ro
       - ./volumes/app/static:/static:ro
       - /etc/localtime:/etc/localtime:ro
+    environment:
+      # Basic HTTP authentication can be enabled by setting the environment
+      # variable HTTP_AUTH_ENABLED to true and setting the environment variables
+      # HTTP_AUTH_USER and HTTP_AUTH_PASS to the desired values.
+      - HTTP_AUTH_ENABLED=false
+      #- HTTP_AUTH_USER=catmaid
+      #- HTTP_AUTH_PASS=secure_password
     depends_on:
       - app
