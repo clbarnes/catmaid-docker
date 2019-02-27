@@ -117,8 +117,13 @@ update_postgres () {
   chown -R postgres:postgres /var/lib/postgresql/data
 
   if [ -f "/var/lib/postgresql/data/postmaster.pid" ]; then
-    echo "- Stopping currently running postmaster"
-    su postgres -c "/usr/lib/postgresql/${BIN_PG_VERSION}/bin/pg_ctl -D /var/lib/postgresql/data/ stop"
+    if [ -f /proc/$(cat /var/lib/postgresql/data/postmaster.pid)/status ]; then
+      echo "- Stopping currently running postmaster"
+      su postgres -c "/usr/lib/postgresql/${BIN_PG_VERSION}/bin/pg_ctl -D /var/lib/postgresql/data/ stop"
+    else
+      echo "- Removing stale postmaster.pid file"
+      rm /var/lib/postgresql/data/postmaster.pid
+    fi
   fi
 
   # Due to a bug in the Postgis 2.4 version we currently use, a Postgres
