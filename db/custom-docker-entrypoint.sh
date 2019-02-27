@@ -11,6 +11,7 @@ AVAILABLE_MEMORY=`awk '/MemTotal/ { printf "%.3f \n", $2/1024 }' /proc/meminfo`
 INSTANCE_MEMORY=${INSTANCE_MEMORY:-$AVAILABLE_MEMORY}
 DATA_PG_VERSION=$(cat /var/lib/postgresql/data/PG_VERSION)
 BIN_PG_VERSION="10"
+DB_POSTGIS_VERSION="2.5"
 
 tune_db () {
   PGBIN="/usr/lib/postgresql/${BIN_PG_VERSION}/bin"
@@ -111,7 +112,7 @@ update_postgres () {
   apt-get update
 
   apt-get install -y --no-install-recommends liblwgeom-dev tzdata
-  apt-get install -y --no-install-recommends "postgresql-$DATA_PG_VERSION-postgis-2.4" "postgresql-$DATA_PG_VERSION-postgis-2.4-scripts"
+  apt-get install -y --no-install-recommends "postgresql-$DATA_PG_VERSION-postgis-$DB_POSTGIS_VERSION" "postgresql-$DATA_PG_VERSION-postgis-$DB_POSTGIS_VERSION-scripts"
 
   echo "- Ensuring correct permissions for Postgres data directory"
   chown -R postgres:postgres /var/lib/postgresql/data
@@ -174,7 +175,7 @@ update_postgres () {
   su postgres -c "cd /var/lib/postgresql/data/; /usr/lib/postgresql/${BIN_PG_VERSION}/bin/pg_upgrade -b '/usr/lib/postgresql/${DATA_PG_VERSION}/bin/' -B '/usr/lib/postgresql/${BIN_PG_VERSION}/bin/' -d '/var/lib/postgresql/data/old-data/' -D '/var/lib/postgresql/data/new-data' -k -p 5433 -P 5434"
 
   echo "- Uninstalling old Postgres $DATA_PG_VERSION binaries"
-  apt-get remove -y "postgresql-$DATA_PG_VERSION" "postgresql-$DATA_PG_VERSION-postgis-2.4"
+  apt-get remove -y "postgresql-$DATA_PG_VERSION" "postgresql-$DATA_PG_VERSION-postgis-$DB_POSTGIS_VERSION"
   apt-get autoremove -y
 
   echo "- Move Postgres data directories into right place"
