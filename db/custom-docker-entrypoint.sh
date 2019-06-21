@@ -10,7 +10,7 @@ DB_UPDATE=${DB_UPDATE:-false}
 AVAILABLE_MEMORY=`awk '/MemTotal/ { printf "%.3f \n", $2/1024 }' /proc/meminfo`
 INSTANCE_MEMORY=${INSTANCE_MEMORY:-$AVAILABLE_MEMORY}
 DATA_PG_VERSION=$(cat /var/lib/postgresql/data/PG_VERSION)
-BIN_PG_VERSION="10"
+BIN_PG_VERSION="11"
 DB_POSTGIS_VERSION="2.5"
 
 tune_db () {
@@ -127,10 +127,7 @@ update_postgres () {
     fi
   fi
 
-  # Due to a bug in the Postgis 2.4 version we currently use, a Postgres
-  # migration fails if there are no PostGIS 2.3 binaries available. To prevent
-  # this, an old version Postgres is started and the respective PostGIS entries
-  # are patched.
+  # Upgrade PostGIS
   PGBIN_OLD="/usr/lib/postgresql/${DATA_PG_VERSION}/bin"
   echo "- Wait until old version database localhost:5433 is ready..."
   su postgres -c "${PGBIN_OLD}/pg_ctl -D /var/lib/postgresql/data/ start -w -o \"-p 5433 \""
