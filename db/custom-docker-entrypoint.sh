@@ -118,7 +118,7 @@ update_postgres () {
   chown -R postgres:postgres /var/lib/postgresql/data
 
   if [ -f "/var/lib/postgresql/data/postmaster.pid" ]; then
-    if [ -f /proc/$(cat /var/lib/postgresql/data/postmaster.pid)/status ]; then
+    if [ -f "/proc/$(cat /var/lib/postgresql/data/postmaster.pid)/status" ]; then
       echo "- Stopping currently running postmaster"
       su postgres -c "/usr/lib/postgresql/${BIN_PG_VERSION}/bin/pg_ctl -D /var/lib/postgresql/data/ stop"
     else
