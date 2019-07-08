@@ -127,7 +127,7 @@ update_postgres () {
     fi
   fi
 
-  # Upgrade PostGIS
+  # Start the old database version
   PGBIN_OLD="/usr/lib/postgresql/${DATA_PG_VERSION}/bin"
   echo "- Wait until old version database localhost:5433 is ready..."
   su postgres -c "${PGBIN_OLD}/pg_ctl -D /var/lib/postgresql/data/ start -w -o \"-p 5433 \""
@@ -135,6 +135,16 @@ update_postgres () {
   do
       sleep 1
   done
+
+  # Make sure there is a Postgres superuser
+  if su postgres -c "${PGBIN_OLD}/psql -p 5433 -t -c '\du' | cut -d \| -f 1 | grep -qw postgres"; then
+    echo "- PostgreSQL superuser postgres found"
+  else
+    echo "- No PostgreSQL superuser found, adding user account postgres"
+    su postgres -c "${PGBIN_OLD}/createuser -p 5433 -s postgres; createdb postgres"
+  fi
+
+  # Upgrade PostGIS
   echo "- Preparing PostGIS migration"
   # get list of databases in system , exclude the tempate dbs
   PSQL_OLD="${PGBIN_OLD}/psql -p 5433"
