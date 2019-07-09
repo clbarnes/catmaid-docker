@@ -167,10 +167,16 @@ update_postgres () {
   # Updating the PostGIS version in the "old" data, makes upgrading easier.
   for database in "${DBS[@]}" ; do
     echo "  Updating PostGIS version in database ${database}"
+    echo "  Messages like \"ERROR: extension ... does not exist\" can be ignored."
     su postgres -c "${PSQL_OLD} -d ${database} -c \"ALTER EXTENSION postgis UPDATE;\" >> /dev/null; exit 0"
     su postgres -c "${PSQL_OLD} -d ${database} -c \"ALTER EXTENSION postgis_topology UPDATE;\" >> /dev/null; exit 0"
     su postgres -c "${PSQL_OLD} -d ${database} -c \"ALTER EXTENSION postgis_tiger_geocoder UPDATE;\" >> /dev/null; exit 0"
   done
+
+  # The original install user is needed for pg_upgrade
+  PG_INSTALL_USER=`su postgres -c 'psql -p 5433 -X -A -t -c "SELECT rolname FROM pg_roles WHERE oid = 10 LIMIT 1"'`
+  echo "- Found install user of previous Postgres cluster: ${PG_INSTALL_USER}"
+
   su postgres -c "/usr/lib/postgresql/${DATA_PG_VERSION}/bin/pg_ctl -D /var/lib/postgresql/data/ stop"
 
   echo "- Moving old data files into separate directory"
@@ -179,11 +185,11 @@ update_postgres () {
   chown -R postgres:postgres /var/lib/postgresql/data/old-data
   chmod 0700 /var/lib/postgresql/data/old-data
 
-  echo "- Creating new Postgres $BIN_PG_VERSION data directory"
+  echo "- Creating new Postgres $BIN_PG_VERSION data directory using original install user $PG_INSTALL_USER"
   mkdir -p /var/lib/postgresql/data/new-data
   chown postgres:postgres /var/lib/postgresql/data/new-data
   chmod 0700 /var/lib/postgresql/data/new-data
-  su postgres -c "/usr/lib/postgresql/${BIN_PG_VERSION}/bin/initdb  -E 'UTF8' -D /var/lib/postgresql/data/new-data" -
+  su postgres -c "/usr/lib/postgresql/${BIN_PG_VERSION}/bin/initdb -E 'UTF8' -U ${PG_INSTALL_USER} -D /var/lib/postgresql/data/new-data" -
 
   echo "- Copying previous postgres configuration"
   cp /var/lib/postgresql/data/new-data/postgresql.conf /var/lib/postgresql/data/new-data/postgresql.conf.original
@@ -193,8 +199,8 @@ update_postgres () {
   chown -R postgres:postgres /var/lib/postgresql/data/new-data
 
   echo "- Upgrading Postgres data to version $BIN_PG_VERSION"
-  echo "- Executed command line: cd /var/lib/postgresql/data/; /usr/lib/postgresql/${BIN_PG_VERSION}/bin/pg_upgrade-b '/usr/lib/postgresql/${DATA_PG_VERSION}/bin/' -B '/usr/lib/postgresql/${BIN_PG_VERSION}/bin/' -d '/var/lib/postgresql/data/old-data/' -D '/var/lib/postgresql/data/new-data/' -k -p 5433 -P 5434"
-  su postgres -c "cd /var/lib/postgresql/data/; /usr/lib/postgresql/${BIN_PG_VERSION}/bin/pg_upgrade -b '/usr/lib/postgresql/${DATA_PG_VERSION}/bin/' -B '/usr/lib/postgresql/${BIN_PG_VERSION}/bin/' -d '/var/lib/postgresql/data/old-data/' -D '/var/lib/postgresql/data/new-data' -k -p 5433 -P 5434"
+  echo "- Executed command line: cd /var/lib/postgresql/data/; /usr/lib/postgresql/${BIN_PG_VERSION}/bin/pg_upgrade-b '/usr/lib/postgresql/${DATA_PG_VERSION}/bin/' -B '/usr/lib/postgresql/${BIN_PG_VERSION}/bin/' -d '/var/lib/postgresql/data/old-data/' -D '/var/lib/postgresql/data/new-data/' -k -p 5433 -P 5434 -U ${PG_INSTALL_USER}"
+  su postgres -c "cd /var/lib/postgresql/data/; /usr/lib/postgresql/${BIN_PG_VERSION}/bin/pg_upgrade -b '/usr/lib/postgresql/${DATA_PG_VERSION}/bin/' -B '/usr/lib/postgresql/${BIN_PG_VERSION}/bin/' -d '/var/lib/postgresql/data/old-data/' -D '/var/lib/postgresql/data/new-data' -k -p 5433 -P 5434 -U ${PG_INSTALL_USER}"
 
   echo "- Uninstalling old Postgres $DATA_PG_VERSION binaries"
   apt-get remove -y "postgresql-$DATA_PG_VERSION" "postgresql-$DATA_PG_VERSION-postgis-$DB_POSTGIS_VERSION"
