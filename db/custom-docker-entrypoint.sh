@@ -12,11 +12,39 @@ INSTANCE_MEMORY=${INSTANCE_MEMORY:-$AVAILABLE_MEMORY}
 DATA_PG_VERSION=$(cat /var/lib/postgresql/data/PG_VERSION)
 BIN_PG_VERSION="11"
 DB_POSTGIS_VERSION="2.5"
+DB_SUPERUSER=${POSTGRES_USER:-postgres}
+PG_BIN="/usr/lib/postgresql/${BIN_PG_VERSION}/bin"
 
-tune_db () {
-  PGBIN="/usr/lib/postgresql/${BIN_PG_VERSION}/bin"
+
+# Make sure we have a Postgres superuser role called "postgres".
+check_db_superuser() {
+  # Allow custom path and port as parameters
+  PG_PATH=${1:-$PG_BIN}
+  PG_PORT=${2:-$DB_PORT}
+
+  if su postgres -c "${PG_PATH}/psql -U ${DB_SUPERUSER} -p ${PG_PORT} -t -c '\du' | cut -d \| -f 1 | grep -qw postgres"; then
+    echo "- PostgreSQL superuser postgres found"
+  else
+    echo "- No PostgreSQL superuser found, adding user account postgres"
+    su postgres -c "${PG_PATH}/createuser -U ${DB_SUPERUSER} -p ${PG_PORT} -s postgres"
+  fi
+}
+
+stop_postgres() {
+  if [ -f "/var/lib/postgresql/data/postmaster.pid" ]; then
+    if [ -f "/proc/$(cat /var/lib/postgresql/data/postmaster.pid)/status" ]; then
+      echo "- Stopping currently running postmaster"
+      su postgres -c "/usr/lib/postgresql/${BIN_PG_VERSION}/bin/pg_ctl -D /var/lib/postgresql/data/ stop"
+    else
+      echo "- Removing stale postmaster.pid file"
+      rm /var/lib/postgresql/data/postmaster.pid
+    fi
+  fi
+}
+
+tune_db() {
   echo "Wait until database $DB_HOST:$DB_PORT is ready..."
-  until su postgres -c "${PGBIN}/pg_isready -h ${DB_HOST} -p ${DB_PORT} -q; exit \$?"
+  until su postgres -c "${PG_BIN}/pg_isready -h ${DB_HOST} -p ${DB_PORT} -q; exit \$?"
   do
       sleep 1
   done
@@ -27,7 +55,7 @@ tune_db () {
   if [ "$DB_TUNE" = true ] ; then
     echo "Tuning Postgres server configuration (connections: $DB_CONNECTIONS memory: $INSTANCE_MEMORY MB force: $DB_FORCE_TUNE)"
     INSTANCE_MEMORY=${INSTANCE_MEMORY} CONNECTIONS=${DB_CONNECTIONS} CONF_FILE=${DB_CONF_FILE} FORCE_PGTUNE=${DB_FORCE_TUNE} python /pg_tune.py
-    su postgres -c "${PGBIN}/pg_ctl -D /var/lib/postgresql/data/ reload -w; exit \$?"
+    su postgres -c "${PG_BIN}/pg_ctl -D /var/lib/postgresql/data/ reload -w; exit \$?"
   fi
 }
 
@@ -117,15 +145,7 @@ update_postgres () {
   echo "- Ensuring correct permissions for Postgres data directory"
   chown -R postgres:postgres /var/lib/postgresql/data
 
-  if [ -f "/var/lib/postgresql/data/postmaster.pid" ]; then
-    if [ -f "/proc/$(cat /var/lib/postgresql/data/postmaster.pid)/status" ]; then
-      echo "- Stopping currently running postmaster"
-      su postgres -c "/usr/lib/postgresql/${BIN_PG_VERSION}/bin/pg_ctl -D /var/lib/postgresql/data/ stop"
-    else
-      echo "- Removing stale postmaster.pid file"
-      rm /var/lib/postgresql/data/postmaster.pid
-    fi
-  fi
+  stop_postgres
 
   # Start the old database version
   PGBIN_OLD="/usr/lib/postgresql/${DATA_PG_VERSION}/bin"
@@ -137,12 +157,7 @@ update_postgres () {
   done
 
   # Make sure there is a Postgres superuser
-  if su postgres -c "${PGBIN_OLD}/psql -p 5433 -t -c '\du' | cut -d \| -f 1 | grep -qw postgres"; then
-    echo "- PostgreSQL superuser postgres found"
-  else
-    echo "- No PostgreSQL superuser found, adding user account postgres"
-    su postgres -c "${PGBIN_OLD}/createuser -p 5433 -s postgres; createdb postgres"
-  fi
+  check_db_superuser $PGBIN_OLD 5433
 
   # Upgrade PostGIS
   echo "- Preparing PostGIS migration"
@@ -206,27 +221,31 @@ update_postgres () {
 # data files should be upgraded.
 if [ "$DATA_PG_VERSION" != "" ] ; then
   if [ "$DATA_PG_VERSION" != "$BIN_PG_VERSION" ] ; then
-      echo "Warning: Postgres was updated to version $BIN_PG_VERSION and the "
-      echo "existing data files of version $DATA_PG_VERSION need to be updated "
-      echo "to match it."
+      printf "Warning: Postgres was updated to version $BIN_PG_VERSION and the\n\
+existing data files of version $DATA_PG_VERSION need to be updated\n\
+to match it.\n"
 
       if [ "$DB_UPDATE" = true ] ; then
         update_postgres
       else
-        echo "Aborting container start, database update needed. To allow "
-        echo "automatic database updates, set \"DB_UPDATE=true\" in the "
-        echo "docker-compose.yml file."
+        printf "Aborting container start, database update needed. To allow\n\
+automatic database updates, please backup your database and\n\
+set \"DB_UPDATE=true\" in the docker-compose.yml file. To\n\
+backup your database, create a copy of the \"volumes\" folder\n\
+after the container has stopped:\n\nsudo cp -r volumes volumes.backup\n\n"
+        stop_postgres
         exit 1
       fi
   else
       if [ "$DB_UPDATE" = true ] ; then
-        echo "Warning: the DB_UPDATE environment variable is set true even "
-        echo "though no update is needed. To avoid automatic updates without "
-        echo "taking a backup beforehand, set DB_UPDATE=false in your "
-        echo "docker-compose.yml file."
+        printf "Warning: the DB_UPDATE environment variable is set true even\n\
+though no update is needed. To avoid automatic updates without\n\
+taking a backup beforehand, set DB_UPDATE=false in your\n\
+docker-compose.yml file.\n"
       fi
   fi
 fi
 
+check_db_superuser &
 tune_db &
 . /docker-entrypoint.sh postgres
