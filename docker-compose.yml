@@ -42,7 +42,7 @@ services:
       DB_PASS: catmaid_password
       DB_NAME: catmaid
       # Add example projects
-      CM_EXAMPLE_PROJECTS: true
+      CM_EXAMPLE_PROJECTS: "true"
       # Adjust the maximum size in Bytes of imported skeletons
       #CM_IMPORTED_SKELETON_FILE_MAXIMUM_SIZE: 5242880
       # The IP to listen on
