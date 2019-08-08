@@ -63,6 +63,11 @@ services:
       # Which sources to trust for CSRF protection, typically the external
       # domain, e.g. catmaid.example.com
       #CM_CSRF_TRUSTED_ORIGINS: ""
+      # Default instance-wide client settings
+      #CM_CLIENT_SETTINGS: ""
+      # Whether or not to force setting the defined client settings, replaced
+      # existing entries.
+      #CM_FORCE_CLIENT_SETTINGS: "false"
     depends_on:
       - db
 
