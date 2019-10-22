@@ -47,6 +47,11 @@ server {
     # Here at least 1GB (!).
     proxy_buffers 256 4k;
 
+    # Allow longer running requests by default. On smaller servers and larger
+    # data sets, this might be necessary.
+    uwsgi_read_timeout 600s;
+    proxy_read_timeout 600s;
+
     location /static/ {
         alias /static/;
 
