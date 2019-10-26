@@ -1,4 +1,4 @@
-FROM mdillon/postgis:11
+FROM mdillon/postgis:12
 
 # For building and running the image, let dpkg/apt know that we install and
 # configure non-interactively.

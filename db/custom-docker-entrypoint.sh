@@ -10,8 +10,8 @@ DB_UPDATE=${DB_UPDATE:-false}
 AVAILABLE_MEMORY=`awk '/MemTotal/ { printf "%.3f \n", $2/1024 }' /proc/meminfo`
 INSTANCE_MEMORY=${INSTANCE_MEMORY:-$AVAILABLE_MEMORY}
 DATA_PG_VERSION=$(cat /var/lib/postgresql/data/PG_VERSION)
-BIN_PG_VERSION="11"
-DB_POSTGIS_VERSION="2.5"
+BIN_PG_VERSION="12"
+DB_POSTGIS_VERSION="3"
 DB_SUPERUSER=${POSTGRES_USER:-postgres}
 PG_BIN="/usr/lib/postgresql/${BIN_PG_VERSION}/bin"
 
