@@ -1,3 +1,28 @@
+# catmaid-dev-docker
+
+Docker-compose application for CATMAID development.
+
+## Concept
+
+A whole development environment in a can.
+All of the OS-level dependencies are handled, and there's a complete python environment, 
+including all the required linters etc..
+
+Good IDEs (PyCharm, VSCode) connect to the container over SSH,
+allowing your local instance of the IDE to use the internal python environment.
+The live code is a volume: changes made inside the container are persisted on the outside,
+and changes made on the outside affect the live environment.
+So there's no need to rebuild.
+
+The database lives in its own container, also with a volume so that changes are persisted.
+
+This is not for use in production.
+
+## Usage
+
+- Clone this repo
+- Clone the CATMAID repository into ./app/CATMAID
+
 # catmaid-docker
 
 Docker compose application for CATMAID
