@@ -1,27 +1,51 @@
 # catmaid-dev-docker
 
-Docker-compose application for CATMAID development.
+WIP docker-compose application for CATMAID development.
+
+## TODO
+
+- [ ] user needs password for SSH
+- [ ] everything else
 
 ## Concept
 
 A whole development environment in a can.
-All of the OS-level dependencies are handled, and there's a complete python environment, 
-including all the required linters etc..
+The OS, and all of the OS-level dependencies are handled,
+and there's a complete python environment, including all the required linters etc..
 
-Good IDEs (PyCharm, VSCode) connect to the container over SSH,
+Good IDEs connect to the container over SSH ([VSCode](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-ssh), [PyCharm](https://www.jetbrains.com/help/pycharm/configuring-remote-interpreters-via-ssh.html)),
 allowing your local instance of the IDE to use the internal python environment.
 The live code is a volume: changes made inside the container are persisted on the outside,
 and changes made on the outside affect the live environment.
-So there's no need to rebuild.
+So there's no need to rebuild (unless you change the dependencies).
 
 The database lives in its own container, also with a volume so that changes are persisted.
 
-This is not for use in production.
+## Limitations
+
+- This is not for use in production.
+- This is only intended to handle CATMAID's dependencies - you still need to configure and run CATMAID inside the container.
 
 ## Usage
 
 - Clone this repo
 - Clone the CATMAID repository into ./app/CATMAID
+- Run the containers with `docker-compose up`
+
+### Accessing the containers
+
+The IP addresses of the CATMAID (`app`) and database (`db`) containers can be found with
+
+```sh
+CATMAID_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' app)
+DB_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' db)
+```
+
+- CATMAID container accessible over SSH at port 22
+- CATMAID dev server, when started, accessible at port 80
+- Database accessible on port 5432
+
+Original README below:
 
 # catmaid-docker
 
